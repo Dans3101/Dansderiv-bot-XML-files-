@@ -1,140 +1,50 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
-
-  <variables>
-    <variable id="stake">stake</variable>
-    <variable id="baseStake">baseStake</variable>
-    <variable id="prediction">prediction</variable>
-    <variable id="mode">mode</variable>
-  </variables>
-
-  <block type="trade" id="trade" x="50" y="50">
-
-    <statement name="SUBMARKET">
-      <block type="volatility_100_1s"></block>
-    </statement>
-
-    <statement name="STRATEGY">
-      <block type="before_purchase">
-        <statement name="STACK">
-
-          <block type="variables_set">
-            <field name="VAR">baseStake</field>
-            <value name="VALUE">
-              <block type="math_number">
-                <field name="NUM">0.35</field>
-              </block>
-            </value>
-
-            <next>
-
-              <block type="variables_set">
-                <field name="VAR">stake</field>
-                <value name="VALUE">
-                  <block type="variables_get">
-                    <field name="VAR">baseStake</field>
-                  </block>
-                </value>
-
-                <next>
-
-                  <block type="variables_set">
-                    <field name="VAR">prediction</field>
-                    <value name="VALUE">
-                      <block type="digit_frequency">
-                        <field name="TYPE">MOST_FREQUENT</field>
-                        <field name="TICKS">100</field>
-                      </block>
-                    </value>
-
-                    <next>
-
-                      <block type="purchase">
-                        <field name="TYPE">DIGITMATCH</field>
-                        <value name="PREDICTION">
-                          <block type="variables_get">
-                            <field name="VAR">prediction</field>
-                          </block>
-                        </value>
-                      </block>
-
-                    </next>
-
-                  </block>
-
-                </next>
-
-              </block>
-
-            </next>
-
-          </block>
-
-        </statement>
-      </block>
-    </statement>
-
-    <statement name="AFTER_PURCHASE">
-
-      <block type="after_purchase">
-
-        <statement name="STACK">
-
-          <block type="controls_if">
-
-            <value name="IF0">
-              <block type="result_loss"></block>
-            </value>
-
-            <statement name="DO0">
-
-              <block type="variables_set">
-                <field name="VAR">stake</field>
-                <value name="VALUE">
-
-                  <block type="math_arithmetic">
-                    <field name="OP">MULTIPLY</field>
-
-                    <value name="A">
-                      <block type="variables_get">
-                        <field name="VAR">stake</field>
-                      </block>
-                    </value>
-
-                    <value name="B">
-                      <block type="math_number">
-                        <field name="NUM">2.5</field>
-                      </block>
-                    </value>
-
-                  </block>
-
-                </value>
-
-              </block>
-
-            </statement>
-
-            <statement name="ELSE">
-
-              <block type="variables_set">
-                <field name="VAR">stake</field>
-                <value name="VALUE">
-                  <block type="variables_get">
-                    <field name="VAR">baseStake</field>
-                  </block>
-                </value>
-              </block>
-
-            </statement>
-
-          </block>
-
-        </statement>
-
-      </block>
-
-    </statement>
-
+  <block type="trade_definition" id="trade">
+    <field name="MARKET">Volatility Indices</field>
+    <field name="SYMBOL">R_100</field>
+    <field name="TRADETYPE">DIGITMATCH</field>
+    <field name="DURATION">1</field>
+    <field name="DURATIONTYPE">t</field>
+    <field name="AMOUNT">0.35</field>
   </block>
 
+  <!-- Digit Frequency Analysis -->
+  <block type="tick_analysis" id="digitfreq">
+    <field name="ANALYSIS_TYPE">digit_frequency</field>
+    <field name="TICKS">100</field>
+    <next>
+      <block type="set_prediction_digit" id="pred">
+        <field name="SOURCE">most_frequent</field>
+      </block>
+    </next>
+  </block>
+
+  <!-- Trade Execution -->
+  <block type="trade" id="trade_exec">
+    <field name="TRADETYPE">DIGITMATCH</field>
+    <field name="PREDICTION_DIGIT">prediction</field>
+  </block>
+
+  <!-- On Loss: Switch to Digit Differ -->
+  <block type="on_trade_result" id="loss_switch">
+    <field name="RESULT">loss</field>
+    <next>
+      <block type="trade" id="digit_differ">
+        <field name="TRADETYPE">DIGITDIFFER</field>
+        <field name="PREDICTION_DIGIT">prediction</field>
+      </block>
+    </next>
+  </block>
+
+  <!-- Martingale -->
+  <block type="money_management" id="martingale">
+    <field name="STRATEGY">martingale</field>
+    <field name="MULTIPLIER">2.5</field>
+  </block>
+
+  <!-- Risk Management -->
+  <block type="risk_management" id="risk">
+    <field name="STOP_LOSS">300</field>
+    <field name="TAKE_PROFIT">20</field>
+  </block>
 </xml>
