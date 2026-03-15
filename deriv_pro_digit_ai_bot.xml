@@ -1,255 +1,140 @@
 <xml xmlns="https://developers.google.com/blockly/xml">
 
-<variables>
-<variable>baseStake</variable>
-<variable>stake</variable>
-<variable>prediction</variable>
-<variable>lossCount</variable>
-<variable>profitTotal</variable>
-<variable>mode</variable>
-</variables>
+  <variables>
+    <variable id="stake">stake</variable>
+    <variable id="baseStake">baseStake</variable>
+    <variable id="prediction">prediction</variable>
+    <variable id="mode">mode</variable>
+  </variables>
 
-<block type="trade" x="30" y="30">
+  <block type="trade" id="trade" x="50" y="50">
 
-<statement name="SUBMARKET">
-<block type="synthetic_index"/>
-</statement>
+    <statement name="SUBMARKET">
+      <block type="volatility_100_1s"></block>
+    </statement>
 
-<statement name="STRATEGY">
+    <statement name="STRATEGY">
+      <block type="before_purchase">
+        <statement name="STACK">
 
-<block type="before_purchase">
+          <block type="variables_set">
+            <field name="VAR">baseStake</field>
+            <value name="VALUE">
+              <block type="math_number">
+                <field name="NUM">0.35</field>
+              </block>
+            </value>
 
-<statement name="STACK">
+            <next>
 
-<block type="variables_set">
-<field name="VAR">baseStake</field>
-<value name="VALUE">
-<block type="math_number">
-<field name="NUM">0.35</field>
-</block>
-</value>
+              <block type="variables_set">
+                <field name="VAR">stake</field>
+                <value name="VALUE">
+                  <block type="variables_get">
+                    <field name="VAR">baseStake</field>
+                  </block>
+                </value>
 
-<next>
+                <next>
 
-<block type="variables_set">
-<field name="VAR">stake</field>
-<value name="VALUE">
-<block type="variables_get">
-<field name="VAR">baseStake</field>
-</block>
-</value>
+                  <block type="variables_set">
+                    <field name="VAR">prediction</field>
+                    <value name="VALUE">
+                      <block type="digit_frequency">
+                        <field name="TYPE">MOST_FREQUENT</field>
+                        <field name="TICKS">100</field>
+                      </block>
+                    </value>
 
-<next>
+                    <next>
 
-<block type="variables_set">
-<field name="VAR">prediction</field>
+                      <block type="purchase">
+                        <field name="TYPE">DIGITMATCH</field>
+                        <value name="PREDICTION">
+                          <block type="variables_get">
+                            <field name="VAR">prediction</field>
+                          </block>
+                        </value>
+                      </block>
 
-<value name="VALUE">
-<block type="digit_frequency">
-<field name="TYPE">MOST_FREQUENT</field>
-<field name="TICKS">100</field>
-</block>
-</value>
+                    </next>
 
-<next>
+                  </block>
 
-<block type="controls_if">
+                </next>
 
-<value name="IF0">
-<block type="logic_compare">
-<field name="OP">EQ</field>
+              </block>
 
-<value name="A">
-<block type="variables_get">
-<field name="VAR">mode</field>
-</block>
-</value>
+            </next>
 
-<value name="B">
-<block type="text">
-<field name="TEXT">MATCH</field>
-</block>
-</value>
+          </block>
 
-</block>
-</value>
+        </statement>
+      </block>
+    </statement>
 
-<statement name="DO0">
+    <statement name="AFTER_PURCHASE">
 
-<block type="purchase">
-<field name="TYPE">DIGITMATCH</field>
+      <block type="after_purchase">
 
-<value name="PREDICTION">
-<block type="variables_get">
-<field name="VAR">prediction</field>
-</block>
-</value>
+        <statement name="STACK">
 
-</block>
+          <block type="controls_if">
 
-</statement>
+            <value name="IF0">
+              <block type="result_loss"></block>
+            </value>
 
-<statement name="ELSE">
+            <statement name="DO0">
 
-<block type="purchase">
-<field name="TYPE">DIGITDIFF</field>
+              <block type="variables_set">
+                <field name="VAR">stake</field>
+                <value name="VALUE">
 
-<value name="PREDICTION">
-<block type="variables_get">
-<field name="VAR">prediction</field>
-</block>
-</value>
+                  <block type="math_arithmetic">
+                    <field name="OP">MULTIPLY</field>
 
-</block>
+                    <value name="A">
+                      <block type="variables_get">
+                        <field name="VAR">stake</field>
+                      </block>
+                    </value>
 
-</statement>
+                    <value name="B">
+                      <block type="math_number">
+                        <field name="NUM">2.5</field>
+                      </block>
+                    </value>
 
-</block>
+                  </block>
 
-</next>
-</block>
-</next>
-</block>
-</next>
-</block>
+                </value>
 
-</statement>
-</block>
-</statement>
+              </block>
 
-<statement name="AFTER_PURCHASE">
+            </statement>
 
-<block type="after_purchase">
+            <statement name="ELSE">
 
-<statement name="STACK">
+              <block type="variables_set">
+                <field name="VAR">stake</field>
+                <value name="VALUE">
+                  <block type="variables_get">
+                    <field name="VAR">baseStake</field>
+                  </block>
+                </value>
+              </block>
 
-<block type="controls_if">
+            </statement>
 
-<value name="IF0">
-<block type="result_win"/>
-</value>
+          </block>
 
-<statement name="DO0">
+        </statement>
 
-<block type="variables_set">
-<field name="VAR">lossCount</field>
-<value name="VALUE">
-<block type="math_number">
-<field name="NUM">0</field>
-</block>
-</value>
+      </block>
 
-<next>
+    </statement>
 
-<block type="variables_set">
-<field name="VAR">mode</field>
-<value name="VALUE">
-<block type="text">
-<field name="TEXT">MATCH</field>
-</block>
-</value>
-
-<next>
-
-<block type="variables_set">
-<field name="VAR">stake</field>
-
-<value name="VALUE">
-<block type="variables_get">
-<field name="VAR">baseStake</field>
-</block>
-</value>
-
-</block>
-
-</next>
-</block>
-</next>
-</block>
-
-</statement>
-
-<statement name="ELSE">
-
-<block type="variables_set">
-<field name="VAR">lossCount</field>
-
-<value name="VALUE">
-
-<block type="math_arithmetic">
-<field name="OP">ADD</field>
-
-<value name="A">
-<block type="variables_get">
-<field name="VAR">lossCount</field>
-</block>
-</value>
-
-<value name="B">
-<block type="math_number">
-<field name="NUM">1</field>
-</block>
-</value>
-
-</block>
-
-</value>
-
-<next>
-
-<block type="variables_set">
-<field name="VAR">mode</field>
-
-<value name="VALUE">
-<block type="text">
-<field name="TEXT">DIFFER</field>
-</block>
-</value>
-
-<next>
-
-<block type="variables_set">
-<field name="VAR">stake</field>
-
-<value name="VALUE">
-
-<block type="math_arithmetic">
-<field name="OP">MULTIPLY</field>
-
-<value name="A">
-<block type="variables_get">
-<field name="VAR">stake</field>
-</block>
-</value>
-
-<value name="B">
-<block type="math_number">
-<field name="NUM">2.3</field>
-</block>
-</value>
-
-</block>
-
-</value>
-
-</block>
-
-</next>
-</block>
-
-</next>
-</block>
-
-</statement>
-
-</block>
-
-</statement>
-
-</block>
-
-</statement>
-
-</block>
+  </block>
 
 </xml>
